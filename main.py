@@ -12,7 +12,7 @@ class FoodProduct(SQLModel, table=True):
 
 
 # Set up database engine
-db_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+db_url = os.environ.get("DATABASE_URL")
 engine = create_engine(db_url)
 
 
@@ -41,4 +41,5 @@ def add_product(item: FoodProduct):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
