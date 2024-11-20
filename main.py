@@ -34,10 +34,19 @@ def get_all_products():
 @app.post("/add-product")
 def add_product(item: FoodProduct):
     with Session(engine) as session:
-        session.add(item)
-        session.commit()
-        session.refresh(item)
-    return item
+        statement = select(FoodProduct).where(FoodProduct.name == item.name)
+        results = session.exec(statement)
+        existing_product = results.first()  # Fetches the first matching result or None if no match found.
+
+        if not existing_product:
+            # Add the new item if it doesn't exist
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+            return item  # Return the newly added item.
+
+    # If the product exists, do nothing.
+    return  # Implicitly returns None or a 204 No Content in some API configurations.
 
 
 if __name__ == "__main__":
