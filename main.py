@@ -1,8 +1,10 @@
 from typing import Optional
-from fastapi import FastAPI  # type: ignore
+from fastapi import FastAPI, HTTPException, Depends, Security, Header  # type: ignore
+from fastapi.security import APIKeyHeader # type: ignore
 from sqlmodel import Field, SQLModel, create_engine, Session, select  # type: ignore
 import os
 import uvicorn  # type: ignore
+from sqlalchemy.exc import IntegrityError
 
 # Database model
 class FoodProduct(SQLModel, table=True):
@@ -23,32 +25,59 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
+# Dependency to get the database session
+def get_session():
+    with Session(engine) as session:
+        yield session
+
 # Get all food products
 @app.get("/all-products")
-def get_all_products():
-    with Session(engine) as session:
-        heroes = session.exec(select(FoodProduct)).all()
-        return heroes
+def get_all_products(skip: int = 0, limit: int = 10, session: Session = Depends(get_session)):
+    query = select(FoodProduct).offset(skip).limit(limit)
+    products = session.exec(query).all()
+    return products
+
+# API key configuration
+API_KEY = os.environ.get("API_KEY")
+if not API_KEY:
+    raise RuntimeError("API_KEY environment variable is not set")
+
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+# Function to verify the API Key
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if api_key != API_KEY:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid API key",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+    return api_key
+
 
 # Add a product to the database
 @app.post("/add-product")
-def add_product(item: FoodProduct):
-    with Session(engine) as session:
-        statement = select(FoodProduct).where(FoodProduct.name == item.name)
-        results = session.exec(statement)
-        existing_product = results.first()  # Fetches the first matching result or None if no match found.
+def add_product(item: FoodProduct, session: Session = Depends(get_session), api_key: str = Depends(verify_api_key)):
+    
+    statement = select(FoodProduct).where(FoodProduct.name == item.name)
+    results = session.exec(statement)
+    existing_product = results.first()  # Fetches the first matching result or None if no match found.
 
-        if not existing_product:
-            # Add the new item if it doesn't exist
-            session.add(item)
-            session.commit()
-            session.refresh(item)
-            return item  # Return the newly added item.
+    if existing_product:
+        raise HTTPException(status_code=409, detail="Product with the same name already exists.")
+    
+    session.add(item)
+    try:
+        session.commit()
+        session.refresh(item)
+        return item # Return the newly added item.
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
-    # If the product exists, do nothing.
-    return  # Implicitly returns None or a 204 No Content in some API configurations.
+
+    
 
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
