@@ -9,8 +9,8 @@ from sqlalchemy.exc import IntegrityError
 # Database model
 class FoodProduct(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field()
-    ingredients: str = Field()
+    name: str = Field(max_length=200)
+    ingredients: str = Field(max_length=10000)
 
 
 # Set up database engine
