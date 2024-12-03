@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Security, Header  # type: ignore
 from fastapi.security import APIKeyHeader # type: ignore
-from sqlmodel import Field, SQLModel, create_engine, Session, select  # type: ignore
+from sqlmodel import Field, SQLModel, create_engine, Session, select, Text  # type: ignore
 import os
 import uvicorn  # type: ignore
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 class FoodProduct(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    ingredients: str
+    ingredients: str = Field(sa_column=Text)
 
 
 # Set up database engine
