@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 class FoodProduct(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100)
-    ingredients: str = Field(max_length=500)
+    ingredients: str = Field(max_length=1000)
 
 
 # Set up database engine
