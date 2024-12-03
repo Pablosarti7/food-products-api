@@ -75,8 +75,14 @@ def add_product(item: FoodProduct, session: Session = Depends(get_session), api_
         session.rollback()
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
-
-    
+# Get a specific ingredient
+@app.get("/ingredient/{ingredient_name}")
+def get_ingredient(ingredient_name: str, session: Session = Depends(get_session)):
+    statement = select(FoodProduct).where(FoodProduct.ingredients.contains(ingredient_name))
+    results = session.exec(statement).all()
+    if not results:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    return results
 
 
 if __name__ == "__main__":
