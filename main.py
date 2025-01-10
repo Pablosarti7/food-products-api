@@ -11,6 +11,7 @@ class FoodProduct(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100)
     ingredients: str = Field(max_length=10000)
+    category: Optional[str] = Field(default=None, max_length=50)
 
 
 # Set up database engine
