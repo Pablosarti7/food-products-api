@@ -33,7 +33,7 @@ def get_session():
 
 # Get all food products
 @app.get("/all-products")
-def get_all_products(skip: int = 0, limit: int = 10, session: Session = Depends(get_session)):
+def get_all_products(skip: int = 0, limit: int = 1000, session: Session = Depends(get_session)):
     query = select(FoodProduct).offset(skip).limit(limit)
     products = session.exec(query).all()
     return products
