@@ -3,3 +3,5 @@ __pycache__
 .env
 alembic/
 alembic.ini
+.python-version
+.vscode

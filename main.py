@@ -4,11 +4,8 @@ from fastapi.security import APIKeyHeader  # type: ignore
 from sqlmodel import Field, SQLModel, create_engine, Session, select  # type: ignore
 import os
 import uvicorn  # type: ignore
-from sqlalchemy.exc import IntegrityError
 
 # Database model
-
-
 class FoodProduct(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100)
