@@ -4,4 +4,4 @@ __pycache__
 alembic/
 alembic.ini
 .python-version
-.vscode
+.vscode/
